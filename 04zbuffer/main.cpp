@@ -38,7 +38,7 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     }
 }
 
-//计算质心坐标
+//计算质心坐标，具体分析在文档判断点是否在三角形内部里
 Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
     Vec3f s[2];
     //计算[AB,AC,PA]的x和y分量
@@ -47,21 +47,24 @@ Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
         s[i][1] = B[i]-A[i];
         s[i][2] = A[i]-P[i];
     }
-    //[u,v,1]和[AB,AC,PA]对应的x和y向量都垂直，所以叉乘
+    //[u,v,1]和[AB,AC,PA]对应的x和y向量都垂直
     Vec3f u = cross(s[0], s[1]);
     //三点共线时，会导致u[2]为0，此时返回(-1,1,1)
     if (std::abs(u[2])>1e-2)
         //若1-u-v，u，v全为大于0的数，表示点在三角形内部
+        //这里u.y/u.z是u，u.x/u.z是v，return的是（P点对于三角形ABC的质心坐标(1-u-v, u, v)）
         return Vec3f(1.f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
     return Vec3f(-1,1,1);
 }
 
 //绘制三角形(坐标数组，zbuffer指针，tga指针，颜色)
+//这里绘制的方式是，判断像素点是否在三角形中
+//判断方式为：质心坐标
 void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
     Vec2f bboxmin( std::numeric_limits<float>::max(),  std::numeric_limits<float>::max());
     Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
     Vec2f clamp(image.get_width()-1, image.get_height()-1);
-    //确定三角形的边框
+    //确定三角形的边框（2d版的三角形AABB包围盒）
     for (int i=0; i<3; i++) {
         for (int j=0; j<2; j++) {
             bboxmin[j] = std::max(0.f,      std::min(bboxmin[j], pts[i][j]));
@@ -72,7 +75,7 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
     //遍历边框中的每一个点
     for (P.x=bboxmin.x; P.x<=bboxmax.x; P.x++) {
         for (P.y=bboxmin.y; P.y<=bboxmax.y; P.y++) {
-            //计算质心
+            //计算质心bc_screen
             if (P.x > 600 && P.y > 500)
             {
                 P.x += 0.01;
@@ -80,9 +83,11 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
             Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
             //质心坐标有一个负值，说明点在三角形外
             if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            //初始化
             P.z = 0;
-            //计算zbuffer
+            //计算zbuffer。计算像素zbuffer的时候，使用质心坐标对其插值。
             for (int i=0; i<3; i++) P.z += pts[i][2]*bc_screen[i];
+            //如果深度测试的值小于之前得到获得深度就更新这个点的深度并画上去
             if (zbuffer[int(P.x+P.y*width)]<P.z) {
                 zbuffer[int(P.x+P.y*width)] = P.z;
                 image.set(P.x, P.y, color);

@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
         float intensity = fmax(0., n * light_dir);
         //强度小于0，说明平面朝向为内  即背面裁剪
         if (intensity > 0){//不加判断的话背面会被渲染成黑色而挡住前面的面，因为这一课还没有深度缓冲，如果加上深度缓冲就不用判断了
+        //话来不加判断的话会得到非常恐怖的图图，恐怖效果可以用
             triangle(screen_coords[0], screen_coords[1], screen_coords[2], image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         }
         
