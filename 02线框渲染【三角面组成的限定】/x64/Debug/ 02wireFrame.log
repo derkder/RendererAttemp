@@ -1,0 +1,7 @@
+﻿  main.cpp
+D:\tinyrenderer_notes-main\02线框渲染\model.h(1,1): warning C4828: 文件包含在偏移 0x26d 处开始的字符，该字符在当前源字符集中无效(代码页 936)。
+  model.cpp
+D:\tinyrenderer_notes-main\02线框渲染\model.h(1,1): warning C4828: 文件包含在偏移 0x26d 处开始的字符，该字符在当前源字符集中无效(代码页 936)。
+  tgaimage.cpp
+  正在生成代码...
+   02wireFrame.vcxproj -> D:\tinyrenderer_notes-main\02线框渲染\x64\Debug\ 02wireFrame.exe

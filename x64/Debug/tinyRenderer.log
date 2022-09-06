@@ -1,0 +1,27 @@
+﻿D:\VisualStudioIDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(1098,5): warning MSB8027: 名为 main.cpp 的两个或更多文件将生成到同一位置的输出。这会导致错误的生成结果。   调用的文件是 01linedrawing\main.cpp, 02线框渲染\main.cpp, 03绘制三角形+平面着色\main.cpp, 04zbuffer\main.cpp, 05透视投影\main.cpp, 06移动视角\main.cpp, 07shader\main.cpp。
+D:\VisualStudioIDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(1098,5): warning MSB8027: 名为 tgaimage.cpp 的两个或更多文件将生成到同一位置的输出。这会导致错误的生成结果。   调用的文件是 01linedrawing\tgaimage.cpp, 02线框渲染\tgaimage.cpp, 03绘制三角形+平面着色\tgaimage.cpp, 04zbuffer\tgaimage.cpp, 05透视投影\tgaimage.cpp, 06移动视角\tgaimage.cpp, 07shader\tgaimage.cpp。
+D:\VisualStudioIDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(1098,5): warning MSB8027: 名为 model.cpp 的两个或更多文件将生成到同一位置的输出。这会导致错误的生成结果。   调用的文件是 02线框渲染\model.cpp, 03绘制三角形+平面着色\model.cpp, 04zbuffer\model.cpp, 05透视投影\model.cpp, 06移动视角\model.cpp, 07shader\model.cpp。
+D:\VisualStudioIDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(1098,5): warning MSB8027: 名为 geometry.cpp 的两个或更多文件将生成到同一位置的输出。这会导致错误的生成结果。   调用的文件是 05透视投影\geometry.cpp, 06移动视角\geometry.cpp, 07shader\geometry.cpp。
+  main.cpp
+x64\Debug\main.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\tgaimage.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\main.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\model.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\tgaimage.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\main.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\model.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\tgaimage.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\main.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\model.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\tgaimage.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\geometry.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\main.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\model.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\tgaimage.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\geometry.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\main.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\model.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+x64\Debug\tgaimage.obj : warning LNK4042: 对象被多次指定；已忽略多余的指定
+main.obj : error LNK2019: 无法解析的外部符号 "public: bool __cdecl TGAImage::set(int,int,struct TGAColor)" (?set@TGAImage@@QEAA_NHHUTGAColor@@@Z)，函数 "void __cdecl line(int,int,int,int,class TGAImage &,struct TGAColor)" (?line@@YAXHHHHAEAVTGAImage@@UTGAColor@@@Z) 中引用了该符号
+our_gl.obj : error LNK2019: 无法解析的外部符号 "public: __cdecl vec<2,float>::vec<2,float><int>(struct vec<2,int> const &)" (??$?0H@?$vec@$01M@@QEAA@AEBU?$vec@$01H@@@Z)，函数 "void __cdecl triangle(struct vec<4,float> *,struct IShader &,class TGAImage &,class TGAImage &)" (?triangle@@YAXPEAU?$vec@$03M@@AEAUIShader@@AEAVTGAImage@@2@Z) 中引用了该符号
+D:\tinyrenderer_notes-main\x64\Debug\tinyRenderer.exe : fatal error LNK1120: 2 个无法解析的外部命令
