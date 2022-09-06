@@ -1,0 +1,1 @@
+D:\tinyrenderer_notes-main\03绘制三角形+平面着色\x64\Debug\片元着色.exe
