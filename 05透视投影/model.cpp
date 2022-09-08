@@ -30,6 +30,7 @@ Model::Model(const char *filename) : verts_(), faces_(), norms_(), uv_() {
             for (int i=0;i<2;i++) iss >> uv[i];
             uv_.push_back(uv);
         }  else if (!line.compare(0, 2, "f ")) {
+            //f x/y/z  x/y/z  x/y/z  每一组的x记录了顶点的坐标序号，y保存的就是纹理UV坐标，z是顶点法向量
             std::vector<Vec3i> f;
             Vec3i tmp;
             iss >> trash;

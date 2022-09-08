@@ -86,6 +86,7 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
             //初始化
             P.z = 0;
             //计算zbuffer。计算像素zbuffer的时候，使用质心坐标对其插值。
+            //这里的深度就是z值
             for (int i=0; i<3; i++) P.z += pts[i][2]*bc_screen[i];
             //如果深度测试的值小于之前得到获得深度就更新这个点的深度并画上去
             if (zbuffer[int(P.x+P.y*width)]<P.z) {
@@ -97,8 +98,10 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 }
 
 //世界坐标转屏幕坐标
+//将世界坐标中(-1,-1，z)的点映射到屏幕的左下角(0,0,z)，(1,1,z)映射到右上角(width,height,z)。
 Vec3f world2screen(Vec3f v) {
-    return Vec3f(int((v.x+1.)*width/2.+.5), int((v.y+1.)*height/2.+.5), v.z);
+    //  原来的：return Vec3f(int((v.x+1.)*width/2.+.5), int((v.y+1.)*height/2.+.5), v.z);
+    return Vec3f(int((v.x+1.)/2.*width), int((v.y+1.)/2.*height), v.z);
 }
 
 int main(int argc, char** argv) {
@@ -123,13 +126,15 @@ int main(int argc, char** argv) {
         for (int j = 0; j < 3; j++) {
             Vec3f v = model->vert(face[j]);
             //世界坐标转屏幕坐标
-            screen_coords[j] = world2screen(model->vert(face[j]));
+            screen_coords[j] = world2screen(v);
             world_coords[j] = v;
         }
         //世界坐标用于计算法向量
         Vec3f n = cross((world_coords[2] - world_coords[0]),(world_coords[1] - world_coords[0]));
         n.normalize();
-        float intensity = n * light_dir;
+        float intensity = fmax(0, n * light_dir);
+        //这里加了深度测试，所以下面的也可以用，但是黑色的渲染了也白渲染
+        //triangle(screen_coords, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         //背面裁剪
         if (intensity > 0) {
             triangle(screen_coords, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));

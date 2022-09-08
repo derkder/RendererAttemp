@@ -1,7 +1,12 @@
-#ifndef __GEOMETRY_H__
+#ifndef __GEOMETRY_H__//这里的ifndef表示如果无定义
 #define __GEOMETRY_H__
 
 #include <cmath>
+#include <vector>
+#include <cassert>
+#include <iostream>
+
+
 
 template <class t> struct Vec2 {
     t x, y;
@@ -21,6 +26,7 @@ template <class t> struct Vec2 {
     t& operator[](const int i) { if (x<=0) return x; else return y; }
     template <class > friend std::ostream& operator<<(std::ostream& s, Vec2<t>& v);
 };
+
 
 template <class t> struct Vec3 {
     t x, y, z;
@@ -64,6 +70,10 @@ template <class t> std::ostream& operator<<(std::ostream& s, Vec2<t>& v) {
 template <class t> std::ostream& operator<<(std::ostream& s, Vec3<t>& v) {
     s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
     return s;
+}
+
+template <typename Vec3f> Vec3f cross(Vec3f v1, Vec3f v2) {
+    return Vec3f(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
