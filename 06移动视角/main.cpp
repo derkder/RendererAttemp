@@ -15,7 +15,7 @@ int *zbuffer = NULL;
 Vec3f light_dir = Vec3f(0,-1,-1).normalize();
 //摄像机位置
 Vec3f eye(2,1,3);
-//焦点位置
+//摄像机看向的位置【焦点】
 Vec3f center(0,0,1);
 
 //视角矩阵，用于将(-1,1),(-1,1),(-1,1)映射到(1/8w,7/8w),(1/8h,7/8h),(0,255)
@@ -35,29 +35,23 @@ Matrix viewport(int x, int y, int w, int h) {
 //更改摄像机视角=更改物体位置和角度，操作为互逆矩阵
 //摄像机变换是先旋转再平移，所以物体需要先平移后旋转，且都是逆矩阵
 Matrix lookat(Vec3f eye, Vec3f center, Vec3f up) {
-    //计算出z，根据z和up算出x，再算出y
-    Vec3f z = (eye - center).normalize();
+    Vec3f z = (eye-center).normalize();
+    //叉乘是右手螺旋定则
     Vec3f x = (up ^ z).normalize();
     Vec3f y = (z ^ x).normalize();
-    Matrix rotation = Matrix::identity(4);
-    Matrix translation = Matrix::identity(4);
-    //***矩阵的第四列是用于平移的。因为观察位置从原点变为了center，所以需要将物体平移-center***
+    Matrix rot = Matrix::identity(4);
+    Matrix trans = Matrix::identity(4);
+    //平移矩阵的逆矩阵
     for (int i = 0; i < 3; i++) {
-        rotation[i][3] = -center[i];
+        trans[i][3] = -center[i];
     }
-    //正交矩阵的逆 = 正交矩阵的转置
-    //矩阵的第一行即是现在的x
-    //矩阵的第二行即是现在的y
-    //矩阵的第三行即是现在的z
-    //***矩阵的三阶子矩阵是当前视线旋转矩阵的逆矩阵***
+    //旋转矩阵的逆矩阵
     for (int i = 0; i < 3; i++) {
-        rotation[0][i] = x[i];
-        rotation[1][i] = y[i];
-        rotation[2][i] = z[i];
+        rot[0][i] = x[i];
+        rot[1][i] = y[i];
+        rot[2][i] = z[i];
     }
-    //这样乘法的效果是先平移物体，再旋转
-    Matrix res = rotation*translation;
-    return res;
+    return rot * trans;
 }
 
 //绘制三角形(坐标1，坐标2，坐标3，顶点光照强度1，顶点光照强度2，顶点光照强度3，tga指针，zbuffer)
@@ -122,21 +116,18 @@ int main(int argc, char** argv) {
     }
     //绘制模型
     {
-        //模型变换矩阵
+        //模型变换矩阵[文档里的旋转平移过程都包含在这个矩阵里了，最后一个Vec3f(0,1,0)是那个up向量]
+        //比上一章多出来的矩阵
         Matrix ModelView  = lookat(eye, center, Vec3f(0,1,0));
 
-        //透视矩阵
+        //透视矩阵,那个c永远是摄像机到原向量基原点的距离
         Matrix Projection = Matrix::identity(4);
+        //Projection[3][2] = -1.f/camera.z;
         Projection[3][2] = -1.f / (eye - center).norm();
 
         //视角矩阵
         Matrix ViewPort   = viewport(width/8, height/8, width*3/4, height*3/4);
 
-        /*std::cerr << ModelView << std::endl;
-        std::cerr << Projection << std::endl;
-        std::cerr << ViewPort << std::endl;
-        Matrix z = (ViewPort*Projection*ModelView);
-        std::cerr << z << std::endl;*/
 
         TGAImage image(width, height, TGAImage::RGB);
         for (int i=0; i<model->nfaces(); i++) {
