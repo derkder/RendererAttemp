@@ -16,31 +16,79 @@ Vec3f    center(0,0,0);
 Vec3f        up(0,1,0);
 
 //高洛德着色器
+//和下面的冯氏着色器不同的是他用varying_intensity记录了每个vertex的光照强度，这样在片元着色器就可以用三个vertex的插值进行计算了
+//顶点着色器会将数据写入varying_intensity
+//片元着色器从varying_intensity中读取数据
 struct GouraudShader : public IShader {
-    //顶点着色器会将数据写入varying_intensity
-    //片元着色器从varying_intensity中读取数据
     Vec3f varying_intensity;
     mat<2, 3, float> varying_uv;
-    //接受两个变量，(面序号，顶点序号)
     virtual Vec4f vertex(int iface, int nthvert) {
-        //根据面序号和顶点序号读取模型对应顶点，并扩展为4维 
         Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
-        //先把三个顶点的uv坐标值确定了
-        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
-        //变换顶点坐标到屏幕坐标（视角矩阵*投影矩阵*变换矩阵*v）
-        gl_Vertex = Viewport* Projection * ModelView *gl_Vertex;
-        //计算光照强度（顶点法向量*光照方向）
-        Vec3f normal = proj<3>(embed<4>(model->normal(iface, nthvert))).normalize();
-        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) *light_dir); // get diffuse lighting intensity
-        return gl_Vertex;
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));//先把三个顶点的uv坐标值确定了
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) *light_dir); //获得三个点的漫反射光照强度这样后面就可以插值了
+        return Viewport * Projection * ModelView * gl_Vertex;
     }
-    //根据传入的质心坐标，颜色，以及varying_intensity计算出当前像素的颜色
+    //根据传入的质心坐标bar，颜色，以及varying_intensity计算出当前像素的颜色
     virtual bool fragment(Vec3f bar, TGAColor &color) {
         Vec2f uv = varying_uv * bar;
-        TGAColor c = model->diffuse(uv);
+        TGAColor uv2c = model->diffuse(uv);//将uv坐标通过读入的uv数据集转换成颜色
         float intensity = varying_intensity*bar;
-        color = c*intensity; 
+        color = uv2c *intensity;
         return false;                              
+    }
+};
+
+
+//Phong氏着色
+struct PhongShader : public IShader {
+    mat<2, 3, float> varying_uv;  // same as above
+    mat<4, 4, float> uniform_M = Projection * ModelView;
+    mat<4, 4, float> uniform_MIT = ModelView.invert_transpose();
+    virtual Vec4f vertex(int iface, int nthvert) {
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
+        return Viewport * Projection * ModelView * gl_Vertex; // transform it to screen coordinates
+    }
+    virtual bool fragment(Vec3f bar, TGAColor& color) {
+        Vec2f uv = varying_uv * bar;//uv只能用插值，即使是逐个片元计算的phong氏着色
+        Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
+        Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
+        Vec3f r = (n * (n * l * 2.f) - l).normalize();   // reflected light
+        //为啥这里不用乘以v：因为他取.z了，相当于对应于视线的v向量为（0，0，1）就相当于乘以过了；model->specular(uv)告诉每个点是否有光泽(在下面的blingphong中改成按照公式来了)
+        float spec = pow(std::max(r.z, 0.0f), model->specular(uv)) ;
+        //float spec = pow(std::max(v*r, 0.0f), model->specular(uv));//phong
+        float diff = std::max(0.f, n * l);
+        TGAColor c = model->diffuse(uv);
+        color = c;
+        for (int i = 0; i < 3; i++) color[i] = std::min<float>(5 + c[i] * (diff + .6 * spec), 255);//三个循环代表颜色的alpha、beta、gamma
+        return false;
+    }
+};
+
+struct BlingPhongShader : public IShader {
+    mat<2, 3, float> varying_uv;  // same as above
+    mat<4, 4, float> uniform_M = Projection * ModelView;
+    mat<4, 4, float> uniform_MIT = ModelView.invert_transpose();
+    virtual Vec4f vertex(int iface, int nthvert) {
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
+        return Viewport * Projection * ModelView * gl_Vertex; // transform it to screen coordinates
+    }
+    virtual bool fragment(Vec3f bar, TGAColor& color) {
+        Vec2f uv = varying_uv * bar;//uv只能用插值，即使是逐个片元计算的phong氏着色
+        Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
+        Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
+        //Vec3f r = (n * (n * l * 2.f) - l).normalize();   // reflected light
+        Vec3f v= proj<3>(uniform_M * embed<4>(eye)).normalize();
+        Vec3f h= proj<3>(embed<4>(l+eye)).normalize();
+        //float spec = pow(std::max(v*r, 0.0f), model->specular(uv));//phong
+        float spec = pow(std::max(v * h, 0.0f), model->specular(uv));//bling-phong
+        float diff = std::max(0.f, n * l);
+        TGAColor c = model->diffuse(uv);
+        color = c;
+        //for (int i = 0; i < 3; i++) color[i] = std::min<float>(5 + c[i] * (diff + .9 * spec), 255);//三个循环代表颜色的alpha、beta、gamma
+        for (int i = 0; i < 3; i++) color[i] = std::min<float>(5 + c[i] * (diff + 1.2 * spec), 255);//这里的高光貌似有点点奇怪
+        return false;
     }
 };
 
@@ -98,29 +146,6 @@ struct FlatShader : public IShader {
     }
 };
 
-//Phong氏着色
-struct PhongShader : public IShader {
-    mat<2, 3, float> varying_uv;  // same as above
-    mat<4, 4, float> uniform_M = Projection * ModelView;
-    mat<4, 4, float> uniform_MIT = ModelView.invert_transpose();
-    virtual Vec4f vertex(int iface, int nthvert) {
-        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
-        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
-        return Viewport * Projection * ModelView * gl_Vertex; // transform it to screen coordinates
-    }
-    virtual bool fragment(Vec3f bar, TGAColor& color) {
-        Vec2f uv = varying_uv * bar;
-        Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
-        Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
-        Vec3f r = (n * (n * l * 2.f) - l).normalize();   // reflected light
-        float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
-        float diff = std::max(0.f, n * l);
-        TGAColor c = model->diffuse(uv);
-        color = c;
-        for (int i = 0; i < 3; i++) color[i] = std::min<float>(5 + c[i] * (diff + .6 * spec), 255);
-        return false;
-    }
-};
 
 int main(int argc, char** argv) {
     //加载模型
@@ -137,12 +162,15 @@ int main(int argc, char** argv) {
     //初始化image和zbuffer
     TGAImage image  (width, height, TGAImage::RGB);
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
+    //实例化flat着色
+    //FlatShader shader;
     //实例化高洛德着色
-    GouraudShader shader;
+    //GouraudShader shader;
     //实例化Phong着色
     //PhongShader shader;
     //实例化Toon着色
 	//ToonShader shader;
+    BlingPhongShader shader;
     //以模型面作为循环控制量
     for (int i=0; i<model->nfaces(); i++) {
         Vec4f screen_coords[3];
@@ -152,8 +180,7 @@ int main(int argc, char** argv) {
             //计算光照强度
             screen_coords[j] = shader.vertex(i, j);
         }
-        //遍历完3个顶点，一个三角形光栅化完成
-        //绘制三角形，triangle内部通过片元着色器对三角形着色
+        //遍历完3个顶点，一个三角形光栅化完成；绘制三角形，triangle内部通过片元着色器对三角形着色
         triangle(screen_coords, shader, image, zbuffer);
     }
 

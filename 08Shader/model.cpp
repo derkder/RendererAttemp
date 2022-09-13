@@ -79,6 +79,7 @@ void Model::load_texture(std::string filename, const char *suffix, TGAImage &img
 }
 
 TGAColor Model::diffuse(Vec2f uvf) {
+    //这里的diffusemap大概就对应f中xyz的z，表示顶点法向量，用于插值
     Vec2i uv(uvf[0]*diffusemap_.get_width(), uvf[1]*diffusemap_.get_height());
     return diffusemap_.get(uv[0], uv[1]);
 }
