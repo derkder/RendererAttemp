@@ -72,7 +72,7 @@ void triangle(Vec4f *pts, IShader &shader, TGAImage &image, TGAImage &zbuffer) {
             //这里pts除以了最后一个分量，实现了透视中的缩放，所以作为边界框
             //pts[i]为三角形的三个顶点
             //pts[i][2]为三角形的z信息(0~255)
-            //pts[i][3]为三角形的投影系数(1-z/c)
+            //pts[i][3]为三角形的投影系数(1-z/c),用来做透视矫正插值
             bboxmin[j] = std::min(bboxmin[j], pts[i][j]/pts[i][3]);
             bboxmax[j] = std::max(bboxmax[j], pts[i][j]/pts[i][3]);
         }
@@ -92,8 +92,21 @@ void triangle(Vec4f *pts, IShader &shader, TGAImage &image, TGAImage &zbuffer) {
             //P的任一质心分量小于0或者zbuffer小于已有zbuffer，不渲染
             //正常来说如果是深度测试，应该是值越小代表越在前面，但这里用z的大小代表的深度，也就是越大越在前面
             if (c.x<0 || c.y<0 || c.z<0 || zbuffer.get(P.x, P.y)[0]>frag_depth) continue;
+            //透视矫正
+            Vec3f c_revised = { 0,0,0 };
+            for (int i = 0; i < 3; ++i)
+            {
+                //求α，β，γ,只需要除以pts第四个分量即可
+                c_revised[i] = c[i] / pts[i][3];
+            }
+            float Z_n = 1. / (c_revised[0] + c_revised[1] + c_revised[2]);
+            for (int i = 0; i < 3; ++i)
+            {
+                //求正确透视下插值的系数
+                c_revised[i] *= Z_n;
+            }
             //调用片元着色器计算当前像素颜色，第二个参数是个地址，fragment会给这个赋值
-            bool discard = shader.fragment(c, color);
+            bool discard = shader.fragment(c_revised, color);
             if (!discard) {
                 //zbuffer
                 zbuffer.set(P.x, P.y, TGAColor(frag_depth));

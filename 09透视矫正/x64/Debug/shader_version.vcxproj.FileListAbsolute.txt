@@ -1,0 +1,2 @@
+D:\tinyrenderer_notes-main\08Shader\x64\Debug\shader_version.exe
+D:\tinyrenderer_notes-main\09透视矫正\x64\Debug\shader_version.exe

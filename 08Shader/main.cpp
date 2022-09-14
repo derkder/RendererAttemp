@@ -12,6 +12,8 @@ const int height = 800;
 
 Vec3f light_dir(0,1,1);
 Vec3f       eye(1,0.5,1.5);
+//这个渲染器相机永远朝向z轴负方向，这个eye只是位置
+//后面的phong都把eye当作相机方向了，因此有问题
 Vec3f    center(0,0,0);
 Vec3f        up(0,1,0);
 
@@ -31,7 +33,7 @@ struct GouraudShader : public IShader {
     //根据传入的质心坐标bar，颜色，以及varying_intensity计算出当前像素的颜色
     virtual bool fragment(Vec3f bar, TGAColor &color) {
         Vec2f uv = varying_uv * bar;
-        TGAColor uv2c = model->diffuse(uv);//将uv坐标通过读入的uv数据集转换成颜色
+        TGAColor uv2c = model->diffuse(uv);//将uv坐标通过读入的uv数据集转换成颜色;_diffuse.tga存储的是一个纹理贴图：
         float intensity = varying_intensity*bar;
         color = uv2c *intensity;
         return false;                              
@@ -54,7 +56,7 @@ struct PhongShader : public IShader {
         Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
         Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
         Vec3f r = (n * (n * l * 2.f) - l).normalize();   // reflected light
-        //为啥这里不用乘以v：因为他取.z了，相当于对应于视线的v向量为（0，0，1）就相当于乘以过了；model->specular(uv)告诉每个点是否有光泽(在下面的blingphong中改成按照公式来了)
+        //为啥这里不用乘以v：因为他取.z了，相当于对应于视线的v向量为（0，0，1）就相当于乘以过了（这个渲染器相机永远朝向z轴负方向）；model->specular(uv)告诉每个点是否有光泽(在下面的blingphong中改成按照公式来了)
         float spec = pow(std::max(r.z, 0.0f), model->specular(uv)) ;
         //float spec = pow(std::max(v*r, 0.0f), model->specular(uv));//phong
         float diff = std::max(0.f, n * l);
@@ -153,6 +155,7 @@ int main(int argc, char** argv) {
         model = new Model(argv[1]);
     } else {
         model = new Model("obj/african_head.obj");
+
     }
     //初始化变换矩阵，投影矩阵，视角矩阵
     lookat(eye, center, up);
@@ -167,10 +170,10 @@ int main(int argc, char** argv) {
     //实例化高洛德着色
     //GouraudShader shader;
     //实例化Phong着色
-    //PhongShader shader;
+    PhongShader shader;
     //实例化Toon着色
 	//ToonShader shader;
-    BlingPhongShader shader;
+    //BlingPhongShader shader;
     //以模型面作为循环控制量
     for (int i=0; i<model->nfaces(); i++) {
         Vec4f screen_coords[3];
