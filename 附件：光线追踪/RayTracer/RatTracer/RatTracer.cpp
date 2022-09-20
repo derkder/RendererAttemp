@@ -64,23 +64,24 @@ vec3 reflect(const vec3& I, const vec3& N) {
     return  I - N * 2.f * (I * N);;
 }
 
-vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& spheres, const std::vector<Light>& lights)//每个屏幕上的像素点跑一个
+//每个屏幕上的像素点跑一个,加了depth的概念后，每个点要递归四层嵌套跑或者直到没有再反射到物体身上为止
+//【整个函数的目的是求实现到屏幕上的一个点连接后，碰到的第一个球体上的点应该显示的颜色】
+vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& spheres, const std::vector<Light>& lights, size_t depth = 0)
 {
     vec3 point, N;
     Material material;
 
-    if (!scene_intersect(orig, dir, spheres, point, N, material))
-    {
-        return vec3{ 0.2, 0.7, 0.8 }; // background color
+    if (depth > 4 || !scene_intersect(orig, dir, spheres, point, N, material)) {
+        return vec3{ 0.2, 0.7, 0.8 };
     }
-
+    vec3 reflect_dir = reflect(dir, N).normalize();
+    vec3 reflect_orig = point + N * 1e-3;
+    vec3 reflect_color = cast_ray(reflect_orig, reflect_dir, spheres, lights, depth + 1);//递归，后面反射的点会贡献值给前面反射的点
     float diffuse_light_intensity = 0;
     float specular_light_intensity = 0;
     for (size_t i = 0; i < lights.size(); i++)
     {
         vec3 light_dir = (lights[i].position - point).normalize();
-        diffuse_light_intensity += lights[i].intensity * std::max(0.f, light_dir * N);
-        specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N) * dir), material.specular_exponent) * lights[i].intensity;
         float light_distance = (lights[i].position - point).norm(); // 光源与交点之间的距离
         vec3 shadow_orig = point + N * 1e-3; // 偏移交点防止与自己相交
         vec3 shadow_pt, shadow_N;
@@ -88,8 +89,10 @@ vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& sphe
         // 阴影的实现就靠这一个判断：如果被遮挡则不进行该光源的光照计算，直接进行下一轮光源的计算
         if (scene_intersect(shadow_orig, light_dir, spheres, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt - shadow_orig).norm() < light_distance)
             continue;
+        diffuse_light_intensity += lights[i].intensity * std::max(0.f, light_dir * N);
+        specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N) * dir), material.specular_exponent) * lights[i].intensity;
     }
-    return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3{ 1., 1., 1. } *specular_light_intensity * material.albedo[1];
+    return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3{ 1., 1., 1. } *specular_light_intensity * material.albedo[1] + reflect_color * material.albedo[2];
 }
 
 
@@ -129,12 +132,12 @@ void render(const std::vector<Sphere>& spheres, const std::vector<Light>& lights
 int main() {
     Material purpel_material(vec3{ 0.4, 0.3, 0.3 }, vec3{ 0.58, 0.44, 0.86 }, 50);
     Material red_material(vec3{ 0.3, 0.1, 0.1 }, vec3{ 1.0, 0.42, 0.42 }, 10);
-
+    Material mirror(vec3{ 0.0, 10.0, 0.8 }, vec3{ 1.0, 1.0, 1.0 }, 1425);
     std::vector<Sphere> spheres;
     spheres.push_back(Sphere(vec3{ -3,    0,   -16 }, 2, purpel_material));
-    spheres.push_back(Sphere(vec3{ -1.0, -1.5, -12 }, 2, red_material));
+    spheres.push_back(Sphere(vec3{ -1.0, -1.5, -12 }, 2, mirror));
     spheres.push_back(Sphere(vec3{ 1.5, -0.5, -18 }, 3, red_material));
-    spheres.push_back(Sphere(vec3{ 7,    5,   -18 }, 4, purpel_material));
+    spheres.push_back(Sphere(vec3{ 7,    5,   -18 }, 4, mirror));
 
     std::vector<Light>  lights;
     lights.push_back(Light(vec3{ -20, 20,  20 }, 1.5));
