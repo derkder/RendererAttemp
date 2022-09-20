@@ -13,9 +13,11 @@ struct Light
 
 struct Material
 {
-    Material(const vec3& color) : diffuse_color(color) {}
-    Material() : diffuse_color() {}
-    vec3 diffuse_color;//表示物体自身颜色的参数
+    Material(const vec3& a, const vec3& color, const float& spec) : albedo(a), diffuse_color(color), specular_exponent(spec) {}
+    Material() : albedo(), diffuse_color(), specular_exponent() {}
+    vec3 albedo;//用于控制漫反射、高光、折射产生的颜色强度
+    vec3 diffuse_color;
+    float specular_exponent;
 };
 
 struct Sphere
@@ -58,6 +60,10 @@ bool scene_intersect(const vec3& orig, const vec3& dir, const std::vector<Sphere
     return spheres_dist < 1000;
 }
 
+vec3 reflect(const vec3& I, const vec3& N) {
+    return  I - N * 2.f * (I * N);;
+}
+
 vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& spheres, const std::vector<Light>& lights)//每个屏幕上的像素点跑一个
 {
     vec3 point, N;
@@ -69,12 +75,14 @@ vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& sphe
     }
 
     float diffuse_light_intensity = 0;
+    float specular_light_intensity = 0;
     for (size_t i = 0; i < lights.size(); i++)
     {
         vec3 light_dir = (lights[i].position - point).normalize();
         diffuse_light_intensity += lights[i].intensity * std::max(0.f, light_dir * N);
+        specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N) * dir), material.specular_exponent) * lights[i].intensity;
     }
-    return material.diffuse_color * diffuse_light_intensity;
+    return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3{ 1., 1., 1. } *specular_light_intensity * material.albedo[1];
 }
 
 
@@ -100,30 +108,31 @@ void render(const std::vector<Sphere>& spheres, const std::vector<Light>& lights
     ofs.open("./outPureSphereImage.ppm", std::ios::binary);
     ofs << "P6\n"
         << width << " " << height << "\n255\n";
-    for (size_t i = 0; i < height * width; ++i)
-    {
-        for (size_t j = 0; j < 3; j++)
-        {
+    for (size_t i = 0; i < height * width; ++i) {
+        vec3& c = framebuffer[i];
+        float max = std::max(c[0], std::max(c[1], c[2]));
+        if (max > 1) c = c * (1. / max); // 如果超过最大值需要缩小颜色
+        for (size_t j = 0; j < 3; j++) {
             ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i][j])));
         }
     }
-    ofs.close();
 }
 
 
-int main()
-{
-    Material purpel_material(vec3{ 0.58, 0.44, 0.86 });
-    Material red_material(vec3{ 1.0, 0.42, 0.42 });
+int main() {
+    Material purpel_material(vec3{ 0.4, 0.3, 0.3 }, vec3{ 0.58, 0.44, 0.86 }, 50);
+    Material red_material(vec3{ 0.3, 0.1, 0.1 }, vec3{ 1.0, 0.42, 0.42 }, 10);
 
     std::vector<Sphere> spheres;
-    spheres.push_back(Sphere(vec3{ -3, 0, -16 }, 2, purpel_material));
+    spheres.push_back(Sphere(vec3{ -3,    0,   -16 }, 2, purpel_material));
     spheres.push_back(Sphere(vec3{ -1.0, -1.5, -12 }, 2, red_material));
     spheres.push_back(Sphere(vec3{ 1.5, -0.5, -18 }, 3, red_material));
-    spheres.push_back(Sphere(vec3{ 7, 5, -18 }, 4, purpel_material));
+    spheres.push_back(Sphere(vec3{ 7,    5,   -18 }, 4, purpel_material));
 
-    std::vector<Light> lights;
-    lights.push_back(Light(vec3{ -20, 20, 20 }, 1.5));
+    std::vector<Light>  lights;
+    lights.push_back(Light(vec3{ -20, 20,  20 }, 1.5));
+    lights.push_back(Light(vec3{ 30, 50, -25 }, 1.8));
+    lights.push_back(Light(vec3{ 30, 20,  30 }, 1.7));
 
     render(spheres, lights);
     return 0;
