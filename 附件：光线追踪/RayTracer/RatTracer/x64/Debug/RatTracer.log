@@ -1,14 +1,15 @@
 ﻿  RatTracer.cpp
 D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(74,36): warning C4305: “初始化”: 从“double”到“float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(93,33): warning C4305: “初始化”: 从“double”到“float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(100,21): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(101,21): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(102,21): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(114,34): warning C4244: “参数”: 从“double”转换到“const float”，可能丢失数据
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(123,50): warning C4305: “初始化”: 从“double”到“float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(123,76): warning C4305: “初始化”: 从“double”到“float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(124,47): warning C4305: “初始化”: 从“double”到“float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(124,72): warning C4305: “初始化”: 从“double”到“float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(134,52): warning C4305: “参数”: 从“double”到“const float”截断
-D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(135,52): warning C4305: “参数”: 从“double”到“const float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(85,44): warning C4305: “参数”: 从“double”到“const float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(100,33): warning C4305: “初始化”: 从“double”到“float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(107,21): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(108,21): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(109,21): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(121,34): warning C4244: “参数”: 从“double”转换到“const float”，可能丢失数据
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(130,50): warning C4305: “初始化”: 从“double”到“float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(130,76): warning C4305: “初始化”: 从“double”到“float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(131,47): warning C4305: “初始化”: 从“double”到“float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(131,72): warning C4305: “初始化”: 从“double”到“float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(141,52): warning C4305: “参数”: 从“double”到“const float”截断
+D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\RatTracer\RatTracer.cpp(142,52): warning C4305: “参数”: 从“double”到“const float”截断
   RatTracer.vcxproj -> D:\tinyrenderer_notes-main\附件：光线追踪\RayTracer\x64\Debug\RatTracer.exe

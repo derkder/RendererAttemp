@@ -81,6 +81,13 @@ vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& sphe
         vec3 light_dir = (lights[i].position - point).normalize();
         diffuse_light_intensity += lights[i].intensity * std::max(0.f, light_dir * N);
         specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N) * dir), material.specular_exponent) * lights[i].intensity;
+        float light_distance = (lights[i].position - point).norm(); // 光源与交点之间的距离
+        vec3 shadow_orig = point + N * 1e-3; // 偏移交点防止与自己相交
+        vec3 shadow_pt, shadow_N;
+        Material tmpmaterial;
+        // 阴影的实现就靠这一个判断：如果被遮挡则不进行该光源的光照计算，直接进行下一轮光源的计算
+        if (scene_intersect(shadow_orig, light_dir, spheres, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt - shadow_orig).norm() < light_distance)
+            continue;
     }
     return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3{ 1., 1., 1. } *specular_light_intensity * material.albedo[1];
 }
