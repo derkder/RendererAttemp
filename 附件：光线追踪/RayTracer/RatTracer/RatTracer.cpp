@@ -70,7 +70,6 @@ vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& sphe
 {
     vec3 point, N;
     Material material;
-
     if (depth > 4 || !scene_intersect(orig, dir, spheres, point, N, material)) {
         return vec3{ 0.2, 0.7, 0.8 };
     }
