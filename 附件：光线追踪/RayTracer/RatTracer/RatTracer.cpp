@@ -107,6 +107,8 @@ void render(const std::vector<Sphere>& spheres, const std::vector<Light>& lights
         {
             //获得像素【一个平面上的】的世界坐标
             float x = (i + 0.5) - width / 2.;//0.5是因为取的是像素点的中心
+            //同时，这里的0.5代表了忽略了像素是有面积的，相当于只对于当前像素的中心点进行了采样，这就导致了噪点。
+            //路径追踪就是在这里的基础上，不止采样一个点，而是加蒙特卡洛找妥协点
             float y = -(j + 0.5) + height / 2.;
             float z = -height / (2. * tan(fov / 2.));//固定的，因为是在一个屏幕上
             vec3 dir = vec3{ x, y, z }.normalize();
