@@ -99,14 +99,14 @@ void render(const std::vector<Sphere>& spheres, const std::vector<Light>& lights
 {
     const int width = 1024;
     const int height = 768;
-    const float fov = M_PI / 3.0;
+    const float fov = M_PI / 3.0;//说明视野是1/3个180度（pai）
     std::vector<vec3> framebuffer(width * height);
     for (size_t j = 0; j < height; j++)
     {
         for (size_t i = 0; i < width; i++)
         {
             //获得像素【一个平面上的】的世界坐标
-            float x = (i + 0.5) - width / 2.;
+            float x = (i + 0.5) - width / 2.;//0.5是因为取的是像素点的中心
             float y = -(j + 0.5) + height / 2.;
             float z = -height / (2. * tan(fov / 2.));//固定的，因为是在一个屏幕上
             vec3 dir = vec3{ x, y, z }.normalize();
