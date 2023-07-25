@@ -42,7 +42,8 @@ struct Sphere
     }
 };
 
-bool scene_intersect(const vec3& orig, const vec3& dir, const std::vector<Sphere>& spheres, vec3& hit, vec3& N, Material& material)//每个屏幕上的像素点跑一个
+//每个屏幕上的像素点跑一个.来查看是否有球和视线相交
+bool scene_intersect(const vec3& orig, const vec3& dir, const std::vector<Sphere>& spheres, vec3& hit, vec3& N, Material& material)
 {
     float spheres_dist = std::numeric_limits<float>::max();//用于存储当前光线与场景中的球体最早相交的时间（这里时间等同于距离）
     for (size_t i = 0; i < spheres.size(); i++)//逐个球看有没有相交
@@ -86,6 +87,7 @@ vec3 cast_ray(const vec3& orig, const vec3& dir, const std::vector<Sphere>& sphe
         vec3 shadow_pt, shadow_N;
         Material tmpmaterial;
         // 阴影的实现就靠这一个判断：如果被遮挡则不进行该光源的光照计算，直接进行下一轮光源的计算
+        //或者距离大于光能照射到的距离
         if (scene_intersect(shadow_orig, light_dir, spheres, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt - shadow_orig).norm() < light_distance)
             continue;
         diffuse_light_intensity += lights[i].intensity * std::max(0.f, light_dir * N);
